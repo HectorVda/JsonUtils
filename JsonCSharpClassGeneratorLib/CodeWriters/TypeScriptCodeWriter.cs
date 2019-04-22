@@ -69,7 +69,7 @@ namespace Xamasoft.JsonClassGenerator.CodeWriters
             //Constructor
             WriteDataConstructor(config, sw, type, prefix);
             //ToService function
-            WriteToServiceFunction(config, sw, type, prefix);
+            WriteToServiceFunction(sw, type, prefix);
 
 
             //End of class
@@ -92,34 +92,15 @@ namespace Xamasoft.JsonClassGenerator.CodeWriters
                 //If the type is nullable the object must be null by default
                 if (IsNullable(field.Type.Type))
                 {
-                    //"this.property = data && data.property || null;"
+                    
                     sw.WriteLine(prefix + "        this." + field.JsonMemberName + " = data && data." + field.JsonMemberName +
                      " || null;");
                 }
                 else
                 {
-                    
-                    
-                    var defaultValue = "";
-                    switch (field.Type.Type)
-                    {
-                        case JsonTypeEnum.String:
-                            defaultValue = "''";
-                            break;
-                        case JsonTypeEnum.Float:
-                        case JsonTypeEnum.Integer:
-                        case JsonTypeEnum.Long:
-                            //For numeric types the default value will be zero
-                            defaultValue = "0";
-                            break;
-                        default:
-                            // The property type is not primitive, so it will provide an instance of the class
-                            defaultValue = " new " + (shouldDefineNamespace ? config.SecondaryNamespace + "." : string.Empty)
-                               + GetTypeName(field.Type, config) + "()";
-                            break;
-                    }
 
-
+                    //In case of non nullable objects, it will provide a proper default value
+                    var defaultValue = GetDefaultValue(config, field, shouldDefineNamespace);
 
                     sw.WriteLine(prefix + "        this." + field.JsonMemberName + " = data && data." + field.JsonMemberName +
                         " || " + defaultValue + ";");
@@ -127,11 +108,37 @@ namespace Xamasoft.JsonClassGenerator.CodeWriters
 
             }
             sw.WriteLine(prefix + "    }");
+            sw.WriteLine();
         }
+
+        private string GetDefaultValue(IJsonClassGeneratorConfig config, FieldInfo field, bool shouldDefineNamespace)
+        {
+            string defaultValue = "";
+            switch (field.Type.Type)
+            {
+                case JsonTypeEnum.String:
+                    defaultValue = "''";
+                    break;
+                case JsonTypeEnum.Float:
+                case JsonTypeEnum.Integer:
+                case JsonTypeEnum.Long:
+                    //For numeric types the default value will be zero
+                    defaultValue = "0";
+                    break;
+                default:
+                    // The property type is not primitive, so it will provide an instance of the class
+                    defaultValue = " new " + (shouldDefineNamespace ? config.SecondaryNamespace + "." : string.Empty)
+                       + GetTypeName(field.Type, config) + "()";
+                    break;
+            }
+
+            return defaultValue;
+        }
+
         /// <summary>
         /// This function will provide a generic copy of the current object instance
         /// </summary>
-        private void WriteToServiceFunction(IJsonClassGeneratorConfig config, TextWriter sw, JsonType type, string prefix)
+        private void WriteToServiceFunction(TextWriter sw, JsonType type, string prefix)
         {
             sw.WriteLine(Environment.NewLine);
             sw.WriteLine(prefix + "public toService(){");
