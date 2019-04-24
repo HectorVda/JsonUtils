@@ -255,6 +255,7 @@
         } catch (e) {
             languageId = 0;
         }
+        $("#div-properties").show();
         switch (languageId) {
             case 3: //Javascript
                 $('#ClassName').attr('disabled', 'disabled');
@@ -267,6 +268,7 @@
                 $('#Nest').attr('disabled', 'disabled');
                 $('#Namespace').attr('disabled', 'disabled');
                 $('#PropertyAttribute').attr('disabled', 'disabled');
+                $("#div-properties").hide();
             break;
             case 5: //Java
                 $('#Nest').attr('disabled', 'disabled');
@@ -285,6 +287,8 @@
             case 7: //TypeScript
                 $('#Pascal').attr('disabled', 'disabled');
                 $('#PropertyAttribute').attr('disabled', 'disabled');
+                $("#div-properties").show();
+                break;
                 break;
             default:
                 

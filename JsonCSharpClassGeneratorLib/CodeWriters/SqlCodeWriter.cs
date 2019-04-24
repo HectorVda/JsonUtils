@@ -84,14 +84,13 @@ namespace Xamasoft.JsonClassGenerator.CodeWriters
         {
             foreach (var field in type.Fields)
             {              
-                if (config.UseProperties)
-                {
+               
                     string typeName = field.Type.InternalType == null 
                         ? field.Type.GetTypeName() 
                         : field.Type.InternalType.GetTypeName();
 
                     sw.WriteLine("    [{0}] {1},", field.MemberName, typeName);
-                }
+                
             }
         }
     }

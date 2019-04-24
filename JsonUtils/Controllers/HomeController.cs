@@ -56,7 +56,7 @@ namespace JsonUtils.Controllers
 
             try
             {
-                vm.CodeObjects = Server.HtmlEncode(Prepare(vm.JSON, vm.ClassName, 1, vm.Nest, false, vm.PropertyAttribute, vm.Namespace));
+                vm.CodeObjects = Server.HtmlEncode(Prepare(vm.JSON, vm.ClassName, 1, vm.Nest, false, vm.PropertyAttribute, vm.Namespace, vm.Properties));
             }
             catch (Exception ex)
             {
@@ -112,7 +112,7 @@ namespace JsonUtils.Controllers
 
                     model.CodeObjects =
                         Server.HtmlEncode(Prepare(model.JSON, model.ClassName, model.Language, model.Nest, model.Pascal,
-                        model.PropertyAttribute, model.Namespace, (model.Language == 5 || model.Language == 6) && model.Properties));
+                        model.PropertyAttribute, model.Namespace, model.Properties));
                 }
                 else
                     model.CodeObjects = "javascript";
@@ -134,7 +134,7 @@ namespace JsonUtils.Controllers
             new TypeScriptCodeWriter()
         };
 
-        private string Prepare(string JSON, string classname, int language, bool nest, bool pascal, string propertyAttribute, string nameSpace, bool hasGetSet=false)
+        private string Prepare(string JSON, string classname, int language, bool nest, bool pascal, string propertyAttribute, string nameSpace, bool hasGetSet)
         {
             if (string.IsNullOrEmpty(JSON))
             {
@@ -168,7 +168,7 @@ namespace JsonUtils.Controllers
 
             gen.NoHelperClass = false;
             gen.SecondaryNamespace = null;
-            gen.UseProperties = (language != 5 && language != 6) || hasGetSet;
+            gen.UseProperties =  hasGetSet;
             gen.MainClass = classname;
             gen.UsePascalCase = pascal;
             gen.PropertyAttribute = propertyAttribute;

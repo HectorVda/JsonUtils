@@ -61,10 +61,17 @@ namespace Xamasoft.JsonClassGenerator.CodeWriters
                     sw.WriteLine(prefix + "      * Examples: " + field.GetExamplesText());
                     sw.WriteLine(prefix + "      */");
                 }
+                sw.WriteLine();
+                if (config.UseProperties) {
+
+                    WritePropertyWithGetterSetter(config, sw, prefix, field, shouldDefineNamespace);
+                }
+                else
+                {
+                    WriteProperty(config, sw, prefix, field, shouldDefineNamespace);
+                }
 
 
-                sw.WriteLine(prefix + "    " + field.JsonMemberName + (IsNullable(field.Type.Type) ? "?" : "") + ": " +
-                    (shouldDefineNamespace ? config.SecondaryNamespace + "." : string.Empty) + GetTypeName(field.Type, config) + ";");
             }
             //Constructor
             WriteDataConstructor(config, sw, type, prefix);
@@ -77,6 +84,80 @@ namespace Xamasoft.JsonClassGenerator.CodeWriters
             //Return carriage for end of file
             sw.WriteLine(Environment.NewLine);
         }
+
+        private void WriteProperty(IJsonClassGeneratorConfig config, TextWriter sw, string prefix, FieldInfo field, bool shouldDefineNamespace)
+        {
+            sw.WriteLine(prefix + "    " + field.JsonMemberName + (IsNullable(field.Type.Type) ? "?" : "") + ": " +
+                               (shouldDefineNamespace ? config.SecondaryNamespace + "." : string.Empty) + GetTypeName(field.Type, config) + ";");
+        }
+
+        private void WritePropertyWithGetterSetter(IJsonClassGeneratorConfig config, TextWriter sw, string prefix, FieldInfo field, bool shouldDefineNamespace)
+        {
+            sw.WriteLine(prefix + "    private _" + field.JsonMemberName + (IsNullable(field.Type.Type) ? "?" : "") + ": " +
+                               (shouldDefineNamespace ? config.SecondaryNamespace + "." : string.Empty) + GetTypeName(field.Type, config) + ";");
+
+            WriteGetter(config, sw, prefix, field, shouldDefineNamespace);
+          
+            WriteSetter(config, sw, prefix, field, shouldDefineNamespace);
+         
+        }
+        /// <summary>
+        /// Generates a setter for the field
+        ///
+        /// Example:
+        /// set balance(value: number)
+        /// {
+        ///     this._balance = value;
+        /// }
+        /// </summary>
+        private void WriteSetter(IJsonClassGeneratorConfig config, TextWriter sw, string prefix, FieldInfo field, bool shouldDefineNamespace)
+        {
+            StringBuilder line = new StringBuilder();
+            line.Append(prefix + "    set ");
+            line.Append(field.JsonMemberName);
+            line.Append("(value");
+            line.Append(IsNullable(field.Type.Type) ? "?" : string.Empty);
+            line.Append(": ");
+            line.Append((shouldDefineNamespace ? config.SecondaryNamespace + "." : string.Empty));
+            line.Append(GetTypeName(field.Type, config));
+            line.Append(") {");
+            sw.WriteLine(line.ToString());
+
+            line = new StringBuilder();
+            line.Append(prefix + "        this._");
+            line.Append(field.JsonMemberName);
+            line.Append(" = value;");
+            sw.WriteLine(line.ToString());
+            sw.WriteLine(prefix + "    }");
+
+        }
+        /// <summary>
+        /// Generates a getter function for the field
+        /// 
+        /// Example:
+        /// get balance(): number {
+        ///     return this._balance;
+        /// }
+        /// </summary>
+        private void WriteGetter(IJsonClassGeneratorConfig config, TextWriter sw, string prefix, FieldInfo field, bool shouldDefineNamespace)
+        {
+            StringBuilder line = new StringBuilder();
+            line.Append(prefix + "    get ");
+            line.Append(field.JsonMemberName);
+            line.Append("(): ");
+            line.Append((shouldDefineNamespace ? config.SecondaryNamespace + "." : string.Empty));
+            line.Append(GetTypeName(field.Type, config));
+            line.Append(" {");
+            sw.WriteLine(line.ToString());
+
+            line = new StringBuilder();
+            line.Append(prefix + "        return this._");
+            line.Append(field.JsonMemberName);
+            line.Append(";");
+            sw.WriteLine(line.ToString());
+            sw.WriteLine(prefix + "    }");
+        }
+
         /// <summary>
         /// The constructor is based on a nullable argument (data) of any type 
         /// wich has the same propierties and types of the class (or a subset of them) and provides a new instance with all of them mapped
@@ -84,7 +165,7 @@ namespace Xamasoft.JsonClassGenerator.CodeWriters
         private void WriteDataConstructor(IJsonClassGeneratorConfig config, TextWriter sw, JsonType type, string prefix)
         {
             sw.WriteLine(Environment.NewLine);
-            sw.WriteLine(prefix + "constructor(data?){");
+            sw.WriteLine(prefix + "constructor(data?) {");
             foreach (var field in type.Fields)
             {
                 var shouldDefineNamespace = type.IsRoot && config.SecondaryNamespace != null && config.Namespace != null && (field.Type.Type == JsonTypeEnum.Object || (field.Type.InternalType != null && field.Type.InternalType.Type == JsonTypeEnum.Object));
@@ -141,9 +222,9 @@ namespace Xamasoft.JsonClassGenerator.CodeWriters
         private void WriteToServiceFunction(TextWriter sw, JsonType type, string prefix)
         {
             sw.WriteLine(Environment.NewLine);
-            sw.WriteLine(prefix + "public toService(){");
+            sw.WriteLine(prefix + "public toService() {");
             
-            sw.WriteLine(prefix + "        let obj : any = new Object;");
+            sw.WriteLine(prefix + "        const obj: any = new Object;");
             foreach (var field in type.Fields)
             {
                 
