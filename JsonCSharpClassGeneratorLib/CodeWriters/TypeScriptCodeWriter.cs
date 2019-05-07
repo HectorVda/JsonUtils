@@ -116,7 +116,6 @@ namespace Xamasoft.JsonClassGenerator.CodeWriters
             line.Append(prefix + "    set ");
             line.Append(field.JsonMemberName);
             line.Append("(value");
-            line.Append(IsNullable(field.Type.Type) ? "?" : string.Empty);
             line.Append(": ");
             line.Append((shouldDefineNamespace ? config.SecondaryNamespace + "." : string.Empty));
             line.Append(GetTypeName(field.Type, config));
